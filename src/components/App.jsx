@@ -1,39 +1,57 @@
-import React, { useState } from 'react';
+import React from 'react';
 import AddContactForm from './addContactForm/addContactForm';
 import ContactList from './contactList/contactList';
 import Filter from './filter/filter';
+import { Component } from 'react';
 
-const App = () => {
-  const localStorageData = localStorage.getItem('contacts');
-  const [state, setState] = useState({
-    contacts: localStorageData ? JSON.parse(localStorageData) : [],
+class App extends Component {
+  localStorageData = localStorage.getItem('contacts');
+  state = {
+    contacts: this.localStorageData ? JSON.parse(this.localStorageData) : [],
     filter: '',
-  });
+  };
 
-  const { contacts, filter } = state;
-  const setContacts = () => {
+  setContacts = () => {
+    const { filter } = this.state;
+
     const localStorageData = localStorage.getItem('contacts');
-    setState({
+    this.setState({
       filter,
       contacts: JSON.parse(localStorageData),
     });
   };
 
-  const setContactToStorage = contact => {
-    // додоаємо контакт до локального сховища
-    localStorage.setItem('contacts', JSON.stringify([...contacts, contact]));
-    // зміна стану (тригер ререндерингу)
-    setContacts();
+  setContactToStorage = newContact => {
+    const { contacts } = this.state;
+    if (
+      contacts.some(contact => {
+        return (
+          contact.name.toLowerCase() === newContact.name.trim().toLowerCase()
+        );
+      })
+    ) {
+      alert(`${newContact.name} is already in contacts`);
+      return;
+    } else {
+      localStorage.setItem(
+        'contacts',
+        JSON.stringify([...contacts, newContact])
+      );
+      this.setContacts();
+    }
   };
 
-  const handleChange = e => {
-    setState({
+  handleChange = e => {
+    const { contacts } = this.state;
+
+    this.setState({
       [e.target.name]: e.target.value,
       contacts,
     });
   };
 
-  const getFilteredContacts = () => {
+  getFilteredContacts = () => {
+    const { contacts, filter } = this.state;
     return contacts.length
       ? contacts.filter(contact => {
           return contact.name.toLowerCase().includes(filter.toLowerCase());
@@ -41,24 +59,36 @@ const App = () => {
       : contacts;
   };
 
-  const deleteContact = deletedId => {
+  deleteContact = deletedId => {
+    const { contacts } = this.state;
+
     const filteredContacts = contacts.filter(({ id }) => deletedId !== id);
     localStorage.setItem('contacts', JSON.stringify(filteredContacts));
-    setContacts();
+    this.setContacts();
   };
 
-  return (
-    <div>
-      <h1>Phonebook</h1>
-      <AddContactForm setContacts={setContactToStorage} contacts={contacts} />
-      <h2>Contacts</h2>
-      <Filter filter={filter} handleChange={handleChange} />
-      <ContactList
-        contacts={getFilteredContacts()}
-        deleteContact={deleteContact}
-      />
-    </div>
-  );
-};
+  render() {
+    const {
+      setContactToStorage,
+      handleChange,
+      getFilteredContacts,
+      deleteContact,
+      state,
+    } = this;
+    const { contacts, filter } = state;
+    return (
+      <div>
+        <h1>Phonebook</h1>
+        <AddContactForm setContacts={setContactToStorage} contacts={contacts} />
+        <h2>Contacts</h2>
+        <Filter filter={filter} handleChange={handleChange} />
+        <ContactList
+          contacts={getFilteredContacts()}
+          deleteContact={deleteContact}
+        />
+      </div>
+    );
+  }
+}
 
 export default App;
