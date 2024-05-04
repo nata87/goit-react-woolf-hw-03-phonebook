@@ -1,0 +1,20 @@
+.form {
+  border: 1px solid black;
+  width: 300px;
+  flex-direction: column;
+  display: flex;
+  padding: 20px;
+  margin-bottom: 15px;
+}
+.label {
+  display: block;
+  font-size: 24px;
+}
+
+button {
+  margin-top: 10px;
+}
+
+p {
+  font-size: 36px;
+}
