@@ -1,8 +1,7 @@
-import React, { Component, useState } from 'react';
+import React, { useState } from 'react';
 import AddContactForm from './addContactForm/addContactForm';
 import ContactList from './contactList/contactList';
 import Filter from './filter/filter';
-import { useEffect } from 'react';
 
 const App = () => {
   const localStorageData = localStorage.getItem('contacts');
