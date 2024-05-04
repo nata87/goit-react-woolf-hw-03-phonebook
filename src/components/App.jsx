@@ -1,57 +1,66 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import AddContactForm from './addContactForm/addContactForm';
 import ContactList from './contactList/contactList';
 import Filter from './filter/filter';
+import { useEffect } from 'react';
 
-class App extends Component {
-  state = {
-    contacts: [],
+const App = () => {
+  const localStorageData = localStorage.getItem('contacts');
+  const [state, setState] = useState({
+    contacts: localStorageData ? JSON.parse(localStorageData) : [],
     filter: '',
-  };
+  });
 
-  setContacts = newContact => {
-    this.setState({
-      contacts: [...this.state.contacts, newContact],
+  const { contacts, filter } = state;
+  const setContacts = () => {
+    const localStorageData = localStorage.getItem('contacts');
+    setState({
+      filter,
+      contacts: JSON.parse(localStorageData),
     });
   };
 
-  handleChange = e => {
-    this.setState({
+  const setContactToStorage = contact => {
+    // додоаємо контакт до локального сховища
+    localStorage.setItem('contacts', JSON.stringify([...contacts, contact]));
+    // зміна стану (тригер ререндерингу)
+    setContacts();
+  };
+
+  const handleChange = e => {
+    setState({
       [e.target.name]: e.target.value,
+      contacts,
     });
   };
 
-  getFilteredContacts = () => {
-    const { contacts, filter } = this.state;
+  const getFilteredContacts = () => {
     return contacts.length
-      ? contacts.filter(contact =>
-          contact.name.toLowerCase().includes(filter.toLowerCase())
-        )
+      ? contacts.filter(contact => {
+          return contact.name.toLowerCase().includes(filter.toLowerCase());
+        })
       : contacts;
   };
 
-  deleteContact = deletedId => {
-    const { contacts } = this.state;
-    this.setState({
-      contacts: contacts.filter(({ id }) => deletedId !== id),
-    });
+  const deleteContact = deletedId => {
+    const filteredContacts = contacts.filter(({ id }) => deletedId !== id);
+    console.log('handleChange', filteredContacts);
+    localStorage.setItem('contacts', JSON.stringify(filteredContacts));
+    setContacts();
   };
 
-  render() {
-    const { filter, contacts } = this.state;
-    return (
-      <div>
-        <h1>Phonebook</h1>
-        <AddContactForm setContacts={this.setContacts} contacts={contacts} />
-        <h2>Contacts</h2>
-        <Filter filter={filter} handleChange={this.handleChange} />
-        <ContactList
-          contacts={this.getFilteredContacts()}
-          deleteContact={this.deleteContact}
-        />
-      </div>
-    );
-  }
-}
+  return (
+    <div>
+      <h1>Phonebook</h1>
+      <AddContactForm setContacts={setContactToStorage} contacts={contacts} />
+      <h2>Contacts</h2>
+      <Filter filter={filter} handleChange={handleChange} />
+      <ContactList
+        contacts={getFilteredContacts()}
+        deleteContact={deleteContact}
+      />
+    </div>
+  );
+};
 
 export default App;
