@@ -5,19 +5,17 @@ import Filter from './filter/filter';
 import { Component } from 'react';
 
 class App extends Component {
-  localStorageData = localStorage.getItem('contacts');
   state = {
-    contacts: this.localStorageData ? JSON.parse(this.localStorageData) : [],
+    contacts: [],
     filter: '',
   };
 
   setContacts = () => {
     const { filter } = this.state;
 
-    const localStorageData = localStorage.getItem('contacts');
     this.setState({
       filter,
-      contacts: JSON.parse(localStorageData),
+      contacts: JSON.parse(localStorage.getItem('contacts')),
     });
   };
 
@@ -66,6 +64,10 @@ class App extends Component {
     localStorage.setItem('contacts', JSON.stringify(filteredContacts));
     this.setContacts();
   };
+
+  componentDidMount() {
+    this.setContacts();
+  }
 
   render() {
     const {
