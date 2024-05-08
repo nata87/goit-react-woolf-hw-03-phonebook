@@ -15,36 +15,13 @@ class App extends Component {
 
     this.setState({
       filter,
-      contacts: JSON.parse(localStorage.getItem('contacts')),
+      contacts: JSON.parse(localStorage.getItem('contacts')) || [],
     });
   };
 
-  setContactToStorage = newContact => {
-    const { contacts } = this.state;
-    if (
-      contacts.some(contact => {
-        return (
-          contact.name.toLowerCase() === newContact.name.trim().toLowerCase()
-        );
-      })
-    ) {
-      alert(`${newContact.name} is already in contacts`);
-      return;
-    } else {
-      localStorage.setItem(
-        'contacts',
-        JSON.stringify([...contacts, newContact])
-      );
-      this.setContacts();
-    }
-  };
-
   handleChange = e => {
-    const { contacts } = this.state;
-
     this.setState({
-      [e.target.name]: e.target.value,
-      contacts,
+      filter: e.target.value,
     });
   };
 
@@ -61,27 +38,33 @@ class App extends Component {
     const { contacts } = this.state;
 
     const filteredContacts = contacts.filter(({ id }) => deletedId !== id);
-    localStorage.setItem('contacts', JSON.stringify(filteredContacts));
-    this.setContacts();
+    this.setState({ contacts: filteredContacts });
+  };
+
+  addContact = newContact => {
+    this.setState(prev => {
+      return {
+        contacts: [...prev.contacts, newContact],
+      };
+    });
   };
 
   componentDidMount() {
     this.setContacts();
   }
 
+  componentDidUpdate() {
+    localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
+  }
+
   render() {
-    const {
-      setContactToStorage,
-      handleChange,
-      getFilteredContacts,
-      deleteContact,
-      state,
-    } = this;
+    const { handleChange, getFilteredContacts, deleteContact, state } = this;
     const { contacts, filter } = state;
+
     return (
       <div>
         <h1>Phonebook</h1>
-        <AddContactForm setContacts={setContactToStorage} contacts={contacts} />
+        <AddContactForm setContacts={this.addContact} contacts={contacts} />
         <h2>Contacts</h2>
         <Filter filter={filter} handleChange={handleChange} />
         <ContactList
